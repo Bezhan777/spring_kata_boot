@@ -1,56 +1,58 @@
 package com.bezhan.spring.spring_kata_boot.controller;
 
-import com.bezhan.spring.spring_kata_boot.model.User;
+import com.bezhan.spring.spring_kata_boot.entity.User;
 import com.bezhan.spring.spring_kata_boot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
+@RequestMapping("/")
 public class UserController {
     @Autowired
     private UserService userService;
 
 
-    @GetMapping("/users")
-    public String findAll(Model model){
-        List<User> users = userService.findAll();
-        model.addAttribute("users", users);
-        return "user-list";
+
+    @GetMapping(value = {"/users","/"})
+    public String printUsers(Model model) {
+        List<User> userList = userService.userList();
+        model.addAttribute("users", userList);
+        return "users";
     }
 
-    @GetMapping("/user-create")
-    public String createUserForm(User user){
-        return "user-create";
-    }
-
-    @PostMapping("/user-create")
-    public String createUser(User user){
-        userService.saveUser(user);
-        return "redirect:/users";
-    }
-
-    @GetMapping("user-delete/{id}")
-    public String deleteUser(@PathVariable("id") Long id){
-        userService.deleteById(id);
-        return "redirect:/users";
-    }
-
-    @GetMapping("/user-update/{id}")
-    public String updateUserForm(@PathVariable("id") Long id, Model model){
-        User user = userService.findById(id);
+    @GetMapping("/addUser")
+    public String addUser(Model model) {
+        User user = new User();
         model.addAttribute("user", user);
-        return "user-update";
+        return "userAdd";
     }
 
-    @PostMapping("/user-update")
-    public String updateUser(User user){
-        userService.saveUser(user);
+    @PostMapping("/addUser")
+    public String addUser(@ModelAttribute("user") User user) {
+        userService.add(user);
         return "redirect:/users";
     }
+
+    @GetMapping("/edit/{id}")
+    public String editUser(@PathVariable("id") long id, Model model) {
+        model.addAttribute("user", userService.getById(id));
+        return "editUser";
+    }
+
+    @PostMapping("/edit")
+    public String editUser(@ModelAttribute("user") User user) {
+        userService.edit(user);
+        return "redirect:/users";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String deleteUser(@PathVariable("id") long id){
+        userService.delete(userService.getById(id));
+        return "redirect:/users";
+    }
+
 }
